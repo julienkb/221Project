@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import util
-import math
+import math, time
 
 def getVariance(average, values):
     return sum((average - val) ** 2 for val in values) / len(values)
@@ -66,8 +66,14 @@ def evaluateNaiveBayes(trainingData, testingData, alertDist, drowsyDist):
 
 
 def main():
+    startTime = time.clock()
     trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv")
+    dataEndTime = time.clock()
     alertDist, drowsyDist = getNaiveBayes(trainingData)
     evaluateNaiveBayes(trainingData, testingData, alertDist, drowsyDist)
+    endTime = time.clock()
+    print "Total time was ", endTime-startTime
+    print "Time to read data was ", dataEndTime-startTime
+    print "Time to learn and test Naive Bayes was ", endTime-dataEndTime
 
 main()

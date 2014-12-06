@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import csv
+import csv, util, time
 
 def dotProduct(f1, f2):
     if len(f1) > len(f2):
@@ -27,14 +27,14 @@ def increment(d1, scale, d2):
 def stochasticGradientDescent(trainExamples, testExamples):
     print "Starting stochastic gradient descent"
     weights = {}  # feature => weight
-    numIters = 20
+    numIters = 5
     def predictor(x):
         if dotProduct(weights, featureExtractor(x)) > 0:
             return 1
         return -1
 
     for i in range(0, numIters):
-        stepSize = 0.001/(numIters**2)
+        stepSize = 0.001/((i+1)**2)
         for x,y in trainExamples:
             features = featureExtractor(x)
             score = dotProduct(weights, features) * y
@@ -47,49 +47,16 @@ def stochasticGradientDescent(trainExamples, testExamples):
 
     return weights
 
-def getDataset(trainingFile, testingFile, solutionFile):
-    # Data is a list of tuples. The first element is a dict of variable names to values,
-    # the second is the IsAlert indicator
-    trainingData = []
-    testingData = []
-    solution = []
-
-    reader = csv.DictReader(open(trainingFile), dialect = "excel")
-    testReader = csv.DictReader(open(testingFile), dialect = "excel")
-    solutionReader = csv.DictReader(open(solutionFile), dialect = "excel")
-
-    print "Reading training data"
-    for row in reader:
-        del row['TrialID']
-        del row['ObsNum']
-        if row['IsAlert'] == '1':
-            isAlert = 1
-        else:
-            isAlert = -1
-        del row['IsAlert'] # Take isAlert indicator out of the features
-        trainingData.append((row, isAlert))
-
-    print "Reading solutions"
-    # Load the solution in an array, since it isn't included in the testingData file
-    for row in solutionReader:
-        if row['Prediction'] == '0': # Want negative, not just 0
-            solution.append(-1)
-        else:
-            solution.append(1)
-
-    print "Reading testing data"
-    i = 0
-    for row in testReader:
-        del row['TrialID']
-        del row['ObsNum']
-        del row['IsAlert'] # Take isAlert indicator out of the features
-        testingData.append((row, solution[i]))
-        i += 1
-
-    return trainingData, testingData
 
 def main():
-    trainingData, testingData = getDataset("fordTrain.csv", "fordTest.csv", "solution.csv")
+    startTime = time.clock()
+    trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv")
+    dataEndTime = time.clock()
     stochasticGradientDescent(trainingData, testingData)
+    endTime = time.clock()
+    print "Total time spent was ", endTime-startTime
+    print "Time spent loading data was ", dataEndTime-startTime
+    print "Time spent running SGD was ", endTime-dataEndTime
+
 
 main()
