@@ -24,7 +24,7 @@ def increment(d1, scale, d2):
     for f, v in d2.items():
         d1[f] = d1.get(f, 0) + float(v) * scale
 
-def stochasticGradientDescent(trainExamples, testExamples):
+def stochasticGradientDescent(trainExamples, testExamples, prune = False):
     print "Starting stochastic gradient descent"
     weights = {}  # feature => weight
     numIters = 5
@@ -40,8 +40,16 @@ def stochasticGradientDescent(trainExamples, testExamples):
             score = dotProduct(weights, features) * y
             if score <= 1: # gradient is -Phi(x)y, subtract gradient * stepSize
                 increment(weights, y*stepSize, features)
+        if prune and i > 0:
+            # Eliminate the lowest weight features
+            removeVars = []
+            for f in weights:
+                if abs(weights[f]) < 0.1:
+                    removeVars.append(f)
+            for f in removeVars:
+                del weights[f]
 
-        print weights
+        #print weights
         print "Iteration: {}, Training data error: {}, Testing data error: {}".format(i+1, \
         evaluatePredictor(trainExamples, predictor), evaluatePredictor(testExamples, predictor))
 
@@ -49,14 +57,19 @@ def stochasticGradientDescent(trainExamples, testExamples):
 
 
 def main():
-    startTime = time.clock()
-    trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv")
-    dataEndTime = time.clock()
-    stochasticGradientDescent(trainingData, testingData)
-    endTime = time.clock()
-    print "Total time spent was ", endTime-startTime
-    print "Time spent loading data was ", dataEndTime-startTime
-    print "Time spent running SGD was ", endTime-dataEndTime
+    for timeInterval in [10,20,50,100,200]:
+        print "Time interval:", timeInterval
+        trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv", True, timeInterval)
+        for prune in [True, False]:
+            print "Pruning:", prune
+#startTime = time.clock()
+
+#dataEndTime = time.clock()
+            stochasticGradientDescent(trainingData, testingData, prune)
+#endTime = time.clock()
+    #print "Total time spent was ", endTime-startTime
+    #print "Time spent loading data was ", dataEndTime-startTime
+    #print "Time spent running SGD was ", endTime-dataEndTime
 
 
 main()

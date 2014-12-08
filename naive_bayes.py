@@ -64,13 +64,22 @@ def evaluateNaiveBayes(trainingData, testingData, alertDist, drowsyDist):
             error += 1
     print "Testing data error is {}".format(1.0 * error / len(testingData))
 
+def getGreatestDifferences(alertDist, drowsyDist):
+    for f in alertDist:
+        diff = alertDist[f][0] - drowsyDist[f][0]
+        std = math.sqrt(alertDist[f][1] + drowsyDist[f][1])
+        if std == 0:
+            print 0
+        else:
+            print f, diff/std
 
 def main():
     startTime = time.clock()
-    trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv")
+    trainingData, testingData = util.getDataset("fordTrain.csv", "fordTest.csv", "solution.csv", True)
     dataEndTime = time.clock()
     alertDist, drowsyDist = getNaiveBayes(trainingData)
     evaluateNaiveBayes(trainingData, testingData, alertDist, drowsyDist)
+    getGreatestDifferences(alertDist, drowsyDist)
     endTime = time.clock()
     print "Total time was ", endTime-startTime
     print "Time to read data was ", dataEndTime-startTime
